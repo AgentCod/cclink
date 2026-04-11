@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { setupCommand } from './commands/setup.js';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -11,5 +12,13 @@ program
   .name('cclink')
   .description('Manage multiple Claude Code accounts via symlinks')
   .version(pkg.version);
+
+program
+  .command('setup')
+  .description('Configure root storage path for account data')
+  .requiredOption('--path <path>', 'Absolute path to store account data')
+  .action(async (opts) => {
+    await setupCommand(opts.path);
+  });
 
 program.parse();
