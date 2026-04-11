@@ -1,8 +1,17 @@
 import * as p from '@clack/prompts';
+import { readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { dirExists, getPathStatus, moveToDir, removeSymlink } from './symlink.js';
 import { isValidAccountName } from './validate.js';
+
+function isDirEmpty(dirPath: string): boolean {
+  try {
+    return readdirSync(dirPath).length === 0;
+  } catch {
+    return true;
+  }
+}
 
 const HOME = homedir();
 const CLAUDE_DIR = join(HOME, '.claude');
@@ -74,9 +83,28 @@ export async function handleRealDirs(rootPath: string): Promise<boolean> {
       continue;
     }
 
-    if (dirExists(join(rootPath, name))) {
-      p.log.error(`Account "${name}" already exists. Choose a different name.`);
-      continue;
+    const backupDir = join(rootPath, name);
+    if (dirExists(backupDir)) {
+      if (isDirEmpty(backupDir)) {
+        // Empty folder — ok to use directly
+        backupName = name;
+        break;
+      }
+      // Non-empty — ask override or rename
+      const action = await p.select({
+        message: `Account "${name}" already exists and is not empty. What would you like to do?`,
+        options: [
+          { value: 'override', label: 'Override — backup into it anyway' },
+          { value: 'rename', label: 'Choose a different name' },
+          { value: 'cancel', label: 'Cancel' },
+        ],
+      });
+      if (p.isCancel(action) || action === 'cancel') {
+        p.cancel('Aborted. No changes made.');
+        return false;
+      }
+      if (action === 'rename') continue;
+      // override
     }
 
     backupName = name;
