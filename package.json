@@ -1,6 +1,6 @@
 {
   "name": "claude-acc",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Manage multiple Claude Code accounts via symlinks",
   "type": "module",
   "bin": {
@@ -29,8 +29,17 @@
     "@types/node": "^20.0.0",
     "tsx": "^4.0.0"
   },
-  "engines": { "node": ">=18" },
-  "files": ["dist"],
-  "keywords": ["claude", "claude-code", "account", "switch"],
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "claude",
+    "claude-code",
+    "account",
+    "switch"
+  ],
   "license": "MIT"
 }
