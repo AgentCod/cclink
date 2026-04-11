@@ -1,0 +1,22 @@
+{
+  "name": "cclink",
+  "version": "0.1.0",
+  "description": "Manage multiple Claude Code accounts via symlinks",
+  "type": "module",
+  "bin": {
+    "cclink": "./dist/cclink.js"
+  },
+  "scripts": {
+    "build": "node --import tsx/esm esbuild.config.ts"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.9.0",
+    "commander": "^12.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "esbuild": "^0.21.0",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0"
+  }
+}
