@@ -23,10 +23,10 @@ export async function switchAccount(
   const ok = await handleRealDirs(rootPath);
   if (!ok) return false;
 
-  // Create account dir after backup prompt
+  // Create account dir (and .claude subfolder) after backup prompt
   if (opts.createIfMissing) {
     try {
-      ensureDir(accountDir);
+      ensureDir(join(accountDir, '.claude'));
     } catch (err) {
       p.log.error(`Failed to create account directory: ${err instanceof Error ? err.message : String(err)}`);
       return false;
