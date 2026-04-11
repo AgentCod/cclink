@@ -1,6 +1,5 @@
 import * as p from '@clack/prompts';
 import { spawn } from 'node:child_process';
-import { join } from 'node:path';
 import { requireConfig } from '../lib/config.js';
 import { dirExists } from '../lib/symlink.js';
 import { switchAccount } from '../lib/switch-account.js';
