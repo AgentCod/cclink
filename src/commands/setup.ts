@@ -1,27 +1,22 @@
 import * as p from '@clack/prompts';
 import { existsSync, mkdirSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { isAbsolute, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import { readConfig, writeConfig } from '../lib/config.js';
 
 export async function setupCommand(rawPath: string): Promise<void> {
   p.intro('cclink setup');
 
-  // Expand ~ manually
+  // Expand leading ~ to home directory
   const expandedPath = rawPath.startsWith('~/')
-    ? rawPath.replace('~', homedir())
+    ? rawPath.replace(/^~/, homedir())
     : rawPath;
 
   const resolvedPath = resolve(expandedPath);
 
-  if (!isAbsolute(resolvedPath)) {
-    p.log.error('Path must be absolute.');
-    process.exit(1);
-  }
-
-  // Reject paths inside ~/.claude
+  // Reject paths inside ~/.claude (check with trailing slash to avoid matching ~/.claude-other)
   const claudeDir = `${homedir()}/.claude`;
-  if (resolvedPath.startsWith(claudeDir)) {
+  if (resolvedPath === claudeDir || resolvedPath.startsWith(claudeDir + '/')) {
     p.log.error('Path cannot be inside ~/.claude.');
     process.exit(1);
   }
