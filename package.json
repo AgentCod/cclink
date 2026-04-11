@@ -7,7 +7,17 @@
     "cclink": "./dist/cclink.js"
   },
   "scripts": {
-    "build": "node --import tsx/esm esbuild.config.ts"
+    "build": "node --import tsx/esm esbuild.config.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "author": "Minh Trung <minhtrungvn6868@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AgentCod/cclink.git"
+  },
+  "homepage": "https://github.com/AgentCod/cclink",
+  "bugs": {
+    "url": "https://github.com/AgentCod/cclink/issues"
   },
   "dependencies": {
     "@clack/prompts": "^0.9.0",
