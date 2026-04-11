@@ -1,5 +1,5 @@
 {
-  "name": "claude-link",
+  "name": "claude-acc",
   "version": "0.1.0",
   "description": "Manage multiple Claude Code accounts via symlinks",
   "type": "module",
