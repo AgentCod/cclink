@@ -2,8 +2,13 @@ import * as p from '@clack/prompts';
 import { readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { dirExists, getPathStatus, moveToDir, removeSymlink } from './symlink.js';
+import { countFiles, dirExists, getPathStatus, moveToDirWithProgress, removeSymlink } from './symlink.js';
 import { isValidAccountName } from './validate.js';
+
+const HOME = homedir();
+const CLAUDE_DIR = join(HOME, '.claude');
+const CLAUDE_JSON = join(HOME, '.claude.json');
+const TARGETS = [CLAUDE_DIR, CLAUDE_JSON];
 
 function isDirEmpty(dirPath: string): boolean {
   try {
@@ -12,12 +17,6 @@ function isDirEmpty(dirPath: string): boolean {
     return true;
   }
 }
-
-const HOME = homedir();
-const CLAUDE_DIR = join(HOME, '.claude');
-const CLAUDE_JSON = join(HOME, '.claude.json');
-
-const TARGETS = [CLAUDE_DIR, CLAUDE_JSON];
 
 /**
  * For each of ~/.claude and ~/.claude.json:
@@ -38,13 +37,12 @@ export async function handleRealDirs(rootPath: string): Promise<boolean> {
       removeSymlink(target);
       continue;
     }
-    // real
     realItems.push(target);
   }
 
   if (realItems.length === 0) return true;
 
-  p.log.warn(`Found existing real directories/files that need to be backed up:`);
+  p.log.warn('Found existing real directories/files that need to be backed up:');
   for (const item of realItems) {
     p.log.message(`  ${item}`);
   }
@@ -62,8 +60,8 @@ export async function handleRealDirs(rootPath: string): Promise<boolean> {
     return false;
   }
 
-  // Get unique backup name
-  let backupName: string = '';
+  // Get backup name
+  let backupName = '';
   while (true) {
     const input = await p.text({
       message: 'Enter backup account name:',
@@ -84,13 +82,7 @@ export async function handleRealDirs(rootPath: string): Promise<boolean> {
     }
 
     const backupDir = join(rootPath, name);
-    if (dirExists(backupDir)) {
-      if (isDirEmpty(backupDir)) {
-        // Empty folder — ok to use directly
-        backupName = name;
-        break;
-      }
-      // Non-empty — ask override or rename
+    if (dirExists(backupDir) && !isDirEmpty(backupDir)) {
       const action = await p.select({
         message: `Account "${name}" already exists and is not empty. What would you like to do?`,
         options: [
@@ -104,7 +96,6 @@ export async function handleRealDirs(rootPath: string): Promise<boolean> {
         return false;
       }
       if (action === 'rename') continue;
-      // override
     }
 
     backupName = name;
@@ -112,10 +103,33 @@ export async function handleRealDirs(rootPath: string): Promise<boolean> {
   }
 
   const backupDir = join(rootPath, backupName);
+
+  // Count total files for progress display
+  let totalFiles = 0;
   for (const item of realItems) {
-    moveToDir(item, backupDir);
+    totalFiles += countFiles(item);
   }
 
-  p.log.success(`Backed up to ${backupDir}`);
+  const s = p.spinner();
+  let copiedSoFar = 0;
+  const fmt = () => totalFiles > 0 ? `${copiedSoFar} / ${totalFiles} files` : '';
+
+  s.start(`Backing up... (${fmt()})`);
+
+  for (const item of realItems) {
+    const itemName = item.split('/').pop()!;
+    const baseCount = copiedSoFar;
+
+    moveToDirWithProgress(item, backupDir, (fileCopied) => {
+      copiedSoFar = baseCount + fileCopied;
+      s.message(`Copying ${itemName} ... (${fmt()})`);
+    });
+
+    // If rename was used (no progress callback fired), sync count manually
+    copiedSoFar = baseCount + countFiles(join(backupDir, itemName));
+    s.message(`Copied ${itemName} (${fmt()})`);
+  }
+
+  s.stop(`Backed up to ${backupDir} (${totalFiles} files)`);
   return true;
 }
