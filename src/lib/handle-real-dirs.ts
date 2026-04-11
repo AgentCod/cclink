@@ -1,5 +1,5 @@
 import * as p from '@clack/prompts';
-import { readdirSync } from 'node:fs';
+import { readdirSync, rmSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { countFiles, dirExists, getPathStatus, moveToDirWithProgress, removeSymlink } from './symlink.js';
@@ -51,6 +51,7 @@ export async function handleRealDirs(rootPath: string): Promise<boolean> {
     message: 'What would you like to do?',
     options: [
       { value: 'backup', label: 'Backup to a named account folder' },
+      { value: 'skip', label: 'Continue without backup (DELETE existing data)' },
       { value: 'cancel', label: 'Cancel — make no changes' },
     ],
   });
@@ -58,6 +59,22 @@ export async function handleRealDirs(rootPath: string): Promise<boolean> {
   if (p.isCancel(choice) || choice === 'cancel') {
     p.cancel('Aborted. No changes made.');
     return false;
+  }
+
+  if (choice === 'skip') {
+    const confirm = await p.confirm({
+      message: `This will PERMANENTLY DELETE the following. Are you sure?\n  ${realItems.join('\n  ')}`,
+      initialValue: false,
+    });
+    if (p.isCancel(confirm) || !confirm) {
+      p.cancel('Aborted. No changes made.');
+      return false;
+    }
+    for (const item of realItems) {
+      rmSync(item, { recursive: true, force: true });
+    }
+    p.log.success('Existing data removed.');
+    return true;
   }
 
   // Get backup name
