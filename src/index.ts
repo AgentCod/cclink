@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { setupCommand } from './commands/setup.js';
 import { loginCommand } from './commands/login.js';
 import { switchCommand } from './commands/switch.js';
+import { statusCommand } from './commands/status.js';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -35,6 +36,20 @@ program
   .description('Switch active account (account must exist via cclink login first)')
   .action(async (accountName) => {
     await switchCommand(accountName);
+  });
+
+program
+  .command('status')
+  .description('List accounts and optionally switch')
+  .action(async () => {
+    await statusCommand();
+  });
+
+program
+  .command('list')
+  .description('Alias for status')
+  .action(async () => {
+    await statusCommand();
   });
 
 program.parse();
