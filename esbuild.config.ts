@@ -1,4 +1,5 @@
 import { build } from 'esbuild';
+import { chmodSync } from 'node:fs';
 
 await build({
   entryPoints: ['src/index.ts'],
@@ -18,3 +19,6 @@ await build({
   external: ['node:*'],
   minify: true,
 });
+
+chmodSync('dist/cclink.js', 0o755);
+console.log('Build complete: dist/cclink.js');
