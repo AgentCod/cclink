@@ -1,5 +1,7 @@
 import { Command } from 'commander';
 import { setupCommand } from './commands/setup.js';
+import { loginCommand } from './commands/login.js';
+import { switchCommand } from './commands/switch.js';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -19,6 +21,20 @@ program
   .requiredOption('--path <path>', 'Absolute path to store account data')
   .action(async (opts) => {
     await setupCommand(opts.path);
+  });
+
+program
+  .command('login <account-name>')
+  .description('Create account and link ~/.claude, then run claude login')
+  .action(async (accountName) => {
+    await loginCommand(accountName);
+  });
+
+program
+  .command('switch <account-name>')
+  .description('Switch active account (account must exist via cclink login first)')
+  .action(async (accountName) => {
+    await switchCommand(accountName);
   });
 
 program.parse();
