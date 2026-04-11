@@ -2,7 +2,7 @@
 
 ## Overview
 
-Setup `cclink` CLI package for manual publishing to npm registry.
+Setup `cclink` CLI package for manual publishing to the public npm registry.
 
 ## Scope
 
@@ -14,42 +14,49 @@ Manual publish only (`npm publish`). No CI/CD automation.
 
 Add metadata fields:
 
-- `author`: `"Minh Trung <minhtrungvn6868@gmail.com>"`
-- `repository`: `{ "type": "git", "url": "https://github.com/AgentCod/cclink.git" }`
-- `homepage`: `"https://github.com/AgentCod/cclink"`
-- `bugs`: `{ "url": "https://github.com/AgentCod/cclink/issues" }`
+```json
+{
+  "author": "Minh Trung <minhtrungvn6868@gmail.com>",
+  "repository": { "type": "git", "url": "https://github.com/AgentCod/cclink.git" },
+  "homepage": "https://github.com/AgentCod/cclink",
+  "bugs": { "url": "https://github.com/AgentCod/cclink/issues" }
+}
+```
 
-Add `prepublishOnly` script to ensure `dist/` is always up to date before publishing:
+Add `prepublishOnly` script to auto-build before every publish:
 
 ```json
-"prepublishOnly": "npm run build"
+"scripts": {
+  "build": "node --import tsx/esm esbuild.config.ts",
+  "prepublishOnly": "npm run build"
+}
 ```
 
-### 2. `.npmignore`
+No `.npmignore` needed — the `files: ["dist"]` field already restricts published files to `dist/` only (allowlist approach).
 
-Exclude files not needed by consumers:
+### 2. `.gitignore` check
 
-```
-src/
-esbuild.config.ts
-tsconfig.json
-plan
-node_modules/
-```
-
-The `files` field in `package.json` already specifies `["dist"]`, so `.npmignore` is an extra safety net.
+Ensure `~/.npmrc` is not committed. The local project `.gitignore` should include `node_modules/` and `.env` at minimum (npm credentials are stored in `~/.npmrc` at the user level, not the project level).
 
 ## Publish workflow
 
 ```bash
-npm login        # one-time login
-npm publish      # builds automatically via prepublishOnly, then publishes
+# One-time setup
+npm login          # authenticates and stores token in ~/.npmrc
+npm whoami         # verify login succeeded
+
+# Optional dry-run to inspect what files will be published
+npm pack           # creates a .tgz — inspect contents before publishing
+
+# Publish
+npm publish        # triggers prepublishOnly (build), then publishes to npm
 ```
 
-For version bumps:
+For subsequent version bumps:
 
 ```bash
-npm version patch   # or minor / major
+git status         # ensure clean working tree before bumping
+npm version patch  # or minor / major — updates package.json + creates a git tag
 npm publish
 ```
 
