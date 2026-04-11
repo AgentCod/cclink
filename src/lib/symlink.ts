@@ -1,4 +1,4 @@
-import { existsSync, lstatSync, mkdirSync, renameSync, rmSync, symlinkSync } from 'node:fs';
+import { cpSync, existsSync, lstatSync, mkdirSync, renameSync, rmSync, symlinkSync } from 'node:fs';
 import { basename, join } from 'node:path';
 
 export type PathStatus = 'missing' | 'symlink' | 'real';
@@ -22,10 +22,21 @@ export function createSymlink(target: string, linkPath: string): void {
   symlinkSync(target, linkPath);
 }
 
-/** Move a real file or directory from src to destDir/basename(src) */
+/** Move a real file or directory from src to destDir/basename(src).
+ *  Falls back to copy+delete if rename fails across filesystems (EXDEV). */
 export function moveToDir(src: string, destDir: string): void {
   mkdirSync(destDir, { recursive: true });
-  renameSync(src, join(destDir, basename(src)));
+  const dest = join(destDir, basename(src));
+  try {
+    renameSync(src, dest);
+  } catch (err: unknown) {
+    if ((err as { code?: string }).code === 'EXDEV') {
+      cpSync(src, dest, { recursive: true });
+      rmSync(src, { recursive: true, force: true });
+    } else {
+      throw err;
+    }
+  }
 }
 
 export function ensureDir(p: string): void {
