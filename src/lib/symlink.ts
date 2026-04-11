@@ -1,4 +1,5 @@
 import { existsSync, lstatSync, mkdirSync, renameSync, rmSync, symlinkSync } from 'node:fs';
+import { basename, join } from 'node:path';
 
 export type PathStatus = 'missing' | 'symlink' | 'real';
 
@@ -11,7 +12,7 @@ export function getPathStatus(p: string): PathStatus {
   }
 }
 
-/** Remove a symlink at path. Throws if not a symlink. */
+/** Remove a symlink at path. */
 export function removeSymlink(p: string): void {
   rmSync(p);
 }
@@ -21,11 +22,10 @@ export function createSymlink(target: string, linkPath: string): void {
   symlinkSync(target, linkPath);
 }
 
-/** Move a real file or directory from src to dest/basename(src) */
+/** Move a real file or directory from src to destDir/basename(src) */
 export function moveToDir(src: string, destDir: string): void {
   mkdirSync(destDir, { recursive: true });
-  const name = src.split('/').pop()!;
-  renameSync(src, `${destDir}/${name}`);
+  renameSync(src, join(destDir, basename(src)));
 }
 
 export function ensureDir(p: string): void {
