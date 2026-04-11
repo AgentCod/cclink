@@ -4,7 +4,7 @@
   "description": "Manage multiple Claude Code accounts via symlinks",
   "type": "module",
   "bin": {
-    "cclink": "./dist/cclink.js"
+    "claude-acc": "./dist/cclink.js"
   },
   "scripts": {
     "build": "node --import tsx/esm esbuild.config.ts",
