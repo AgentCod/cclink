@@ -32,16 +32,16 @@ function runClaudeLogin(): Promise<void> {
 
     child.on('error', (err: NodeJS.ErrnoException) => {
       if (err.code === 'ENOENT') {
-        console.error('`claude` not found. Is Claude Code installed?');
+        p.log.error('`claude` not found. Is Claude Code installed?');
       } else {
-        console.error(`Failed to spawn claude: ${err.message}`);
+        p.log.error(`Failed to spawn claude: ${err.message}`);
       }
       process.exit(1);
     });
 
     child.on('close', (code) => {
       if (code !== 0) {
-        console.warn(`Warning: claude login exited with code ${code}`);
+        p.log.warn(`claude login exited with code ${code}`);
       }
       resolve();
     });

@@ -1,3 +1,5 @@
+import * as p from '@clack/prompts';
+
 /**
  * Valid account names: non-empty, no '/', not '.' or '..'
  * Dots within names (e.g. 'john.doe') are allowed.
@@ -11,8 +13,8 @@ export function isValidAccountName(name: string): boolean {
 
 export function assertValidAccountName(name: string): void {
   if (!isValidAccountName(name)) {
-    console.error(
-      `Error: Invalid account name "${name}". ` +
+    p.log.error(
+      `Invalid account name "${name}". ` +
       `Account names must not be empty, '.' or '..', or contain slashes.`
     );
     process.exit(1);

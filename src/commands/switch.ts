@@ -28,4 +28,6 @@ export async function switchCommand(accountName: string): Promise<void> {
 
   const ok = await switchAccount(rootPath, accountName);
   if (!ok) process.exit(0);
+
+  p.outro(`Switched to account: ${accountName}`);
 }

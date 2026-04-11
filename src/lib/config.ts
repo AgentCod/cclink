@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import * as p from '@clack/prompts';
 
 const CONFIG_PATH = join(homedir(), '.cclink.json');
 
@@ -28,7 +29,7 @@ export function writeConfig(config: CclinkConfig): void {
 export function requireConfig(): CclinkConfig {
   const config = readConfig();
   if (!config) {
-    console.error('Error: cclink is not configured. Run `cclink setup --path <path>` first.');
+    p.log.error('cclink is not configured. Run `cclink setup --path <path>` first.');
     process.exit(1);
   }
   return config;

@@ -7,8 +7,8 @@ import { readConfig, writeConfig } from '../lib/config.js';
 export async function setupCommand(rawPath: string): Promise<void> {
   p.intro('cclink setup');
 
-  // Expand leading ~ to home directory
-  const expandedPath = rawPath.startsWith('~/')
+  // Expand leading ~ to home directory (handles both '~' and '~/...')
+  const expandedPath = rawPath === '~' || rawPath.startsWith('~/')
     ? rawPath.replace(/^~/, homedir())
     : rawPath;
 
