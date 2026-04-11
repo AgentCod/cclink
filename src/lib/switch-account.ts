@@ -9,8 +9,8 @@ const HOME = homedir();
 
 /**
  * Core switch: handle real dirs, create symlinks, update config.
- * accountDir must already exist (caller validates).
- * createIfMissing=true is used by login to create the account dir after the backup prompt.
+ * If createIfMissing=true (used by login), creates the account dir after the backup prompt.
+ * Returns false if user cancelled or an error occurred; true on success.
  */
 export async function switchAccount(
   rootPath: string,
@@ -19,21 +19,35 @@ export async function switchAccount(
 ): Promise<boolean> {
   const accountDir = join(rootPath, accountName);
 
-  // Handle real dirs BEFORE creating the account dir
+  // Handle real dirs BEFORE creating the account dir (cancel leaves no orphan)
   const ok = await handleRealDirs(rootPath);
   if (!ok) return false;
 
-  // Create account dir after backup prompt (so cancel leaves no orphan)
+  // Create account dir after backup prompt
   if (opts.createIfMissing) {
-    ensureDir(accountDir);
+    try {
+      ensureDir(accountDir);
+    } catch (err) {
+      p.log.error(`Failed to create account directory: ${err instanceof Error ? err.message : String(err)}`);
+      return false;
+    }
   }
 
-  // Create symlinks
-  createSymlink(join(accountDir, '.claude'), join(HOME, '.claude'));
-  createSymlink(join(accountDir, '.claude.json'), join(HOME, '.claude.json'));
+  // Create symlinks (~/.claude → accountDir/.claude, ~/.claude.json → accountDir/.claude.json)
+  try {
+    createSymlink(join(accountDir, '.claude'), join(HOME, '.claude'));
+    createSymlink(join(accountDir, '.claude.json'), join(HOME, '.claude.json'));
+  } catch (err) {
+    p.log.error(`Failed to create symlinks: ${err instanceof Error ? err.message : String(err)}`);
+    return false;
+  }
 
   // Update config
-  const config = readConfig()!;
+  const config = readConfig();
+  if (!config) {
+    p.log.error('Configuration not found. Run `cclink setup --path <path>` first.');
+    return false;
+  }
   writeConfig({ ...config, activeAccount: accountName });
 
   p.log.success(`Switched to account: ${accountName}`);
