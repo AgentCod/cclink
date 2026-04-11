@@ -3,6 +3,7 @@ import { setupCommand } from './commands/setup.js';
 import { loginCommand } from './commands/login.js';
 import { switchCommand } from './commands/switch.js';
 import { statusCommand } from './commands/status.js';
+import { disableCommand } from './commands/disable.js';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -50,6 +51,13 @@ program
   .description('Alias for status')
   .action(async () => {
     await statusCommand();
+  });
+
+program
+  .command('disable')
+  .description('Remove symlinks so Claude Code runs with ~/.claude directly')
+  .action(async () => {
+    await disableCommand();
   });
 
 program.parse();
