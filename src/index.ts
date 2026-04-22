@@ -4,6 +4,7 @@ import { loginCommand } from './commands/login.js';
 import { switchCommand } from './commands/switch.js';
 import { statusCommand } from './commands/status.js';
 import { disableCommand } from './commands/disable.js';
+import { saveCommand } from './commands/save.js';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -51,6 +52,13 @@ program
   .description('Alias for status')
   .action(async () => {
     await statusCommand();
+  });
+
+program
+  .command('save')
+  .description('Save current keychain credentials to active account folder (.cert.txt)')
+  .action(async () => {
+    await saveCommand();
   });
 
 program

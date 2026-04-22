@@ -13,6 +13,7 @@ export async function statusCommand(): Promise<void> {
   const { rootPath, activeAccount } = config;
 
   p.log.info(`Root path: ${rootPath}`);
+  p.log.info(`Active account: ${activeAccount ?? '(none)'}`);
 
   if (!dirExists(rootPath)) {
     p.log.error(`Root path "${rootPath}" does not exist. Re-run \`cclink setup\`.`);

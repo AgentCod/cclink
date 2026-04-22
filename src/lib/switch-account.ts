@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { readConfig, writeConfig } from './config.js';
 import { handleRealDirs } from './handle-real-dirs.js';
 import { createSymlink, ensureDir } from './symlink.js';
+import { loadCertFile, restoreKeychainEntries } from './keychain.js';
 
 const HOME = homedir();
 
@@ -49,6 +50,14 @@ export async function switchAccount(
     return false;
   }
   writeConfig({ ...config, activeAccount: accountName });
+
+  // Restore keychain credentials if .cert.txt exists for this account
+  const certPath = join(accountDir, '.cert.txt');
+  const entries = loadCertFile(certPath);
+  if (entries && entries.length > 0) {
+    const restored = restoreKeychainEntries(entries);
+    p.log.info(`Restored ${restored} keychain credential(s) for account: ${accountName}`);
+  }
 
   p.log.success(`Switched to account: ${accountName}`);
   return true;
